@@ -1,0 +1,205 @@
+{
+ "id": "dora-2024-1774",
+ "title": "AI Audit Workbook – Use case: DORA ICT risk management (Delegated Regulation (EU) 2024/1774)",
+ "subtitle": "Runs in your browser · no data leaves your device unless AI/embedding APIs are switched on · aligned to the Global Internal Audit Standards (2024) · Normbuilder Engine + Matching Engine",
+ "version": "1.1",
+ "engineVersion": "0.1",
+ "classesOrigin": "Normative package (auditor-confirmed drafts)",
+ "normativeSources": [
+  {
+   "ref": "Commission Delegated Regulation (EU) 2024/1774",
+   "celex": "32024R1774",
+   "note": "RTS on ICT risk management tools, methods, processes and policies and the simplified ICT risk management framework, supplementing DORA (Regulation (EU) 2022/2554). Verify against EUR-Lex before formal use."
+  },
+  {
+   "ref": "Regulation (EU) 2022/2554 (DORA)",
+   "celex": "32022R2554",
+   "note": "The enabling regulation. Titles II and III of this RTS map to Articles 9(2) and 16(1) of DORA respectively."
+  }
+ ],
+ "requirementCut": {
+  "mode": "article",
+  "refTemplate": "Art. {n} – {title}",
+  "obligationPattern": "\\b(shall|must|required|requires?|should|is responsible|at least|are to|needs? to)\\b",
+  "maxFallback": 60
+ },
+ "validation": {
+  "batchSize": 4,
+  "maxCandidates": 8,
+  "requirementChars": 2500,
+  "retentionHours": 168
+ },
+ "evidenceVocab": {
+  "designPattern": "policy|procedure|process description|manual|guideline|sop|raci|matrix|framework|standard|rcm|risk.?control|charter|methodology|roles and responsibilities|work instruction|playbook|plan\\b",
+  "operatingPattern": "\\blog\\b|logs|report|ticket|record|register|sample|extract|minutes|test result|scan|screenshot|export|review of|attestation|recertification|restore test|incident|approval|evidence of|dashboard|kri|invoice|sign-?off",
+  "designDetailPattern": "scope|owner|responsib|frequency|at least|annual|quarter|monthly|criteria|approved by|approval|escalat|exception|threshold|retention|must|shall",
+  "categories": [
+   {
+    "pattern": "raci|ownership|roles and responsibilities",
+    "label": "RACI / ownership"
+   },
+   {
+    "pattern": "risk.?control|rcm",
+    "label": "Risk-control matrix"
+   },
+   {
+    "pattern": "monitor|kri|dashboard",
+    "label": "Monitoring report"
+   },
+   {
+    "pattern": "policy|procedure|framework|charter|methodology",
+    "label": "Policy / procedure / framework"
+   },
+   {
+    "pattern": "log|ticket|record|register|report",
+    "label": "Operational record / log"
+   }
+  ],
+  "defaultCategory": "Other"
+ },
+ "raciRules": [
+  {
+   "pattern": "access|identity|authenticat",
+   "raci": [
+    "Identity and access management",
+    "CISO",
+    "System and data owners, HR",
+    "Internal audit"
+   ]
+  },
+  {
+   "pattern": "continuity|backup|recovery|restor|response and recovery",
+   "raci": [
+    "Business continuity / ICT operations",
+    "Management body or Head of ICT",
+    "Business owners, risk",
+    "Internal audit"
+   ]
+  },
+  {
+   "pattern": "incident|anomalous|detect",
+   "raci": [
+    "Security operations",
+    "CISO",
+    "ICT operations, third-party management",
+    "Management body"
+   ]
+  },
+  {
+   "pattern": "crypt|network|logging|vulnerab|patch|security testing|data and system",
+   "raci": [
+    "Information security function",
+    "CISO",
+    "System owners, risk",
+    "Internal audit"
+   ]
+  },
+  {
+   "pattern": "asset|operations",
+   "raci": [
+    "ICT operations",
+    "Head of ICT",
+    "Information security, risk",
+    "Business owners"
+   ]
+  },
+  {
+   "pattern": "project|change|acquisition|development|maintenance",
+   "raci": [
+    "Project management and ICT delivery",
+    "Head of ICT",
+    "Risk, information security",
+    "Business owners"
+   ]
+  },
+  {
+   "pattern": "physical|environment|premises|data centre",
+   "raci": [
+    "Facilities and physical security",
+    "Head of Security or CISO",
+    "ICT operations, HR",
+    "Internal audit"
+   ]
+  },
+  {
+   "pattern": "human resources|training|awareness|competence",
+   "raci": [
+    "HR with information security",
+    "Management body or HR director",
+    "Legal, compliance",
+    "All staff"
+   ]
+  },
+  {
+   "pattern": "incident reporting|classification of incidents",
+   "raci": [
+    "Incident management",
+    "CISO",
+    "ICT operations, communication",
+    "Management body"
+   ]
+  },
+  {
+   "pattern": "business continuity|continuity policy",
+   "raci": [
+    "Business continuity management",
+    "Head of ICT or CISO",
+    "Business owners, risk",
+    "Internal audit"
+   ]
+  },
+  {
+   "pattern": "third-party|third party|provider|supplier",
+   "raci": [
+    "ICT third-party risk management",
+    "Head of ICT",
+    "Procurement, legal, risk",
+    "Internal audit"
+   ]
+  },
+  {
+   "pattern": "testing|test",
+   "raci": [
+    "Security testing function",
+    "CISO",
+    "ICT operations, risk",
+    "Internal audit"
+   ]
+  }
+ ],
+ "defaultRaci": [
+  "ICT risk function",
+  "Management body",
+  "Compliance, internal audit",
+  "Business and ICT functions"
+ ],
+ "normativePackage": {
+  "fileName": "Delegated_Regulation_EU_2024_1774_ICT_risk_management.txt",
+  "fileTag": "2024_1774",
+  "articlesFile": "articles.json",
+  "classesFile": "classes.csv",
+  "loadLabel": "Load Delegated Regulation (EU) 2024/1774 (from the supplied PDF)",
+  "uploadNote": "Legislation, regulation, standards or supervisory guidance containing requirements – here Commission Delegated Regulation (EU) 2024/1774 (RTS on ICT risk management tools, methods, processes and policies and the simplified ICT risk management framework, supplementing DORA, Regulation (EU) 2022/2554). Requirements are extracted into the Validation sheet and carry four requirement classes: Control Design, Monitoring the Effectiveness, Demonstrate by Evidencing and Ownership (RACI). The classes shipped in this workbook are auditor-confirmed drafts from the normative package; running the Normbuilder Engine replaces them with AI drafts that must themselves be reviewed. The regulation text was extracted from the supplied PDF (one requirement per Article, 42 Articles); verify against EUR-Lex before use in formal workpapers."
+ },
+ "evidenceNote": "Design evidence (Test of Design / Design Effectiveness): ICT security policy, ICT risk management policy and procedures, process descriptions, RACI matrix, monitoring framework, risk-control matrix. Operating evidence (Operating Effectiveness): access review records, vulnerability scan and patching reports, system logs, change tickets, backup and restore test results, incident registers, monitoring reports and other dated operational records. Not every document is eligible for TD, DE and OE – eligibility is assessed in the Source Register before any conclusion is drawn.",
+ "settingDefaults": {},
+ "sampleEvidence": [
+  {
+   "name": "ICT_Security_Policy_v3.txt",
+   "text": "ICT Security Policy – Example Bank (illustrative sample), version 3.0, approved by the management body on 2026-01-15. Scope: all ICT systems and information assets. The policy is aligned to the information security objectives in the digital operational resilience strategy. Owner: CISO. The policy shall be reviewed at least annually and after material changes to the cyber threat landscape. Indicators: percentage of systems compliant with baseline, number of open exceptions, time to remediate critical vulnerabilities. Exceptions from the policy are recorded in the exceptions register and approved by the CISO; exceptions older than 90 days are escalated to the risk committee. Staff non-compliance is handled under the HR disciplinary procedure. Documentation to be maintained: policies, procedures, exceptions register, review minutes. Roles and responsibilities: the CISO is accountable; the information security function is responsible for implementation; HR and Legal are consulted."
+  },
+  {
+   "name": "RACI_ICT_Risk_Management.txt",
+   "text": "RACI matrix ICT risk management (illustrative sample). Control: ICT risk assessment. Responsible: ICT risk manager. Accountable: Chief Risk Officer. Consulted: CISO, business process owners. Informed: management body, internal audit. Control: Acceptance of residual ICT risk above tolerance. Responsible: ICT risk manager. Accountable: management body. Consulted: CISO. Informed: risk committee. Control: Annual review of accepted residual risks, performed each year and approved by the Chief Risk Officer."
+  },
+  {
+   "name": "Access_Review_Log_2026Q2.csv",
+   "text": "review_date,system,reviewer,accounts_reviewed,exceptions_found,exceptions_closed_date,evidence_ref\n2026-04-14,Core banking,A. de Boer,412,6,2026-04-28,TKT-1181\n2026-04-16,Payments hub,M. Visser,230,2,2026-05-02,TKT-1190\n2026-05-05,Customer portal,J. Bakker,158,0,,TKT-1204\n2026-06-10,Data warehouse,A. de Boer,97,11,,TKT-1233"
+  },
+  {
+   "name": "Backup_Restore_Test_Report_2026.txt",
+   "text": "Backup and restore test report, test date 2026-03-21. System: core banking database. Backup taken 2026-03-20 22:00. Restore performed to isolated environment 2026-03-21 09:10, completed 2026-03-21 11:42. Result: restore successful, data integrity checks passed, recovery time objective of 4 hours met (2h32m). Findings: the restore of the archive tier was not tested. Report approved by Head of ICT on 2026-03-24. Next test planned 2026-09. Test log entries: 2026-03-21 09:10 start, 2026-03-21 11:42 end, 2026-03-21 12:05 integrity check passed."
+  }
+ ],
+ "settingsIntro": "Privacy: API keys are stored only in this browser (localStorage) and never written into this file or into exported workpapers. When AI or an embedding API is on, document text is sent to the configured provider. Use anonymised documents unless your organisation has approved this. Set a spend limit on the key. Anthropic does not offer an embedding endpoint: use a third-party embedding provider or the local fallback. How AI results are controlled: each TD, DE and OE result carries a rationale and a verbatim quote from a candidate evidence chunk. The workbook checks the quote exists, forces Not assessable where no eligible evidence exists (design-only evidence for OE, operating-only evidence for TD/DE), and downgrades positive results without a verifiable quote. The auditor always confirms or overrides each result."
+}

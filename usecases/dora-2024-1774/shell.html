@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>{{TITLE}}</title>
+<style>
+body{font-family:Segoe UI,Arial,sans-serif;margin:0;background:#f3f5f8;color:#1b2430}
+header{background:#12355b;color:#fff;padding:14px 24px}header h1{margin:0;font-size:20px}header small{opacity:.8}
+nav{display:flex;gap:4px;background:#1d4a7a;padding:0 16px}nav button{background:none;border:0;color:#cfe0f3;padding:12px 18px;cursor:pointer;font-size:14px}
+nav button.on{background:#f3f5f8;color:#12355b;font-weight:600}
+main{padding:20px 24px}section{display:none}section.on{display:block}
+.card{background:#fff;border-radius:8px;padding:16px;margin-bottom:16px;box-shadow:0 1px 3px #0002}
+.drop{border:2px dashed #7a9cc6;border-radius:8px;padding:26px;text-align:center;background:#f8fbff}.drop.h{background:#e3efff}
+button.b{background:#12355b;color:#fff;border:0;border-radius:5px;padding:8px 14px;cursor:pointer;margin:2px}button.b.s{background:#5b7694}
+table{border-collapse:collapse;width:100%;background:#fff;font-size:13px}th{background:#12355b;color:#fff;text-align:left;padding:8px;position:sticky;top:0}
+td{border-bottom:1px solid #dde3ea;padding:7px;vertical-align:top}
+.tag{padding:2px 8px;border-radius:10px;font-size:12px;white-space:nowrap}
+.ok{background:#d4f1dc;color:#1c6b36}.pa{background:#fff0c2;color:#7a5a00}.no{background:#fbd5d5;color:#8c1d1d}.pe{background:#e4e8ee;color:#555}.na{background:#e9e1f5;color:#573a8a}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}select,input,textarea{font:inherit;font-size:12px}
+.note{font-size:12px;color:#556}
+#valT table{min-width:2600px}#valT td{min-width:150px}#valT td.w{min-width:260px}
+</style></head><body>
+<header><h1>{{TITLE}} <small>v{{VERSION}} · AI-assisted</small></h1>
+<small>{{SUBTITLE}}</small></header>
+<nav id="nav"></nav>
+<main>
+<section id="upload" class="on">
+<div class="grid">
+<div class="card"><h3>1. Normative documents</h3><p class="note">{{NORMATIVE_NOTE}}</p>
+<div class="drop" data-role="Normative">Drop files here or <button class="b" onclick="pick('Normative')">browse</button></div>
+<textarea id="pasteNormative" rows=3 style="width:98%;margin-top:8px" placeholder="…or paste text here"></textarea><button class="b s" onclick="addPaste('Normative')">Add pasted text</button></div>
+<div class="card"><h3>2. Evidence documents</h3><p class="note">{{EVIDENCE_NOTE}}</p>
+<div class="drop" data-role="Evidence">Drop files here or <button class="b" onclick="pick('Evidence')">browse</button></div>
+<textarea id="pasteEvidence" rows=3 style="width:98%;margin-top:8px" placeholder="…or paste text here"></textarea><button class="b s" onclick="addPaste('Evidence')">Add pasted text</button></div>
+</div>
+<div class="card"><button class="b" onclick="loadReg()">{{LOAD_LABEL}}</button> <button class="b" onclick="loadSample()">Load illustrative sample evidence</button>
+<button class="b s" onclick="saveWP()">Save workpaper (JSON)</button><button class="b s" onclick="document.getElementById('wpf').click()">Open workpaper</button>
+<button class="b s" onclick="if(confirm('Clear everything?')){S.docs=[];S.reqs=[];S.ov={};S.match={};S.ai={};S.chunks=[];S.run={started:Date.now(),log:[]};render()}">Reset</button>
+<input type="file" id="wpf" hidden accept=".json" onchange="openWP(this.files[0])">
+<p class="note">Readable formats: .txt .md .csv .json .html .xml .log. .docx and text-based .pdf are read locally in the browser (basic reader). Scanned PDFs, old .doc and Excel files cannot be read: paste the text instead. The sample evidence is fictitious and for demonstration only.</p></div>
+<div class="card" id="status"></div>
+</section>
+<section id="register"><div class="card"><h3>Source register</h3><p class="note">Eligibility is proposed automatically from the document name and content and <b>must be confirmed by the auditor</b>. TD = Test of Design, DE = Design Effectiveness, OE = Operating Effectiveness. Only eligible documents can support the corresponding conclusion. Relevance, linked requirement and linked class are filled by the Matching Engine and are candidate links, not proof.</p><div id="regT" style="overflow:auto"></div></div></section>
+<section id="valid"><div class="card"><h3>Validation sheet</h3>
+<p class="note">Workflow: (1) Normbuilder Engine defines the four requirement classes per requirement; (2) Matching Engine embeds evidence chunks and matches them to the <b>requirement classes</b> (not only the raw requirement text); (3) AI validation assesses TD, DE and OE separately. Embedding similarity is a candidate match and never proof of compliance. Design-only evidence cannot support an OE conclusion; operating evidence cannot support TD or DE unless it also describes the control design. Missing evidence is not compliance. Automated results are <b>indicative</b> – the auditor must confirm or override each conclusion (IIA Standards 14.2–14.3, 14.6).</p>
+<div id="valBar" style="margin-bottom:10px"><button class="b" onclick="runAI(false)">▶ Run AI validation</button> <button class="b s" onclick="if(confirm('Replace the package requirement classes with AI drafts?'))runNorm(true)">Run Normbuilder only</button> <button class="b s" onclick="runMatch()">Run Matching only</button> <button class="b s" onclick="if(confirm('Discard AI results and run again?'))runAI(true)">Re-run all</button> <span id="aiMsg" class="note"></span>
+<div id="valBarNote" class="note" style="margin-top:6px"></div></div>
+<div id="valT" style="overflow:auto;max-height:70vh"></div>
+<button class="b" onclick="csv()">Export CSV</button></div></section>
+<section id="settings"><div class="card"><h3>AI Setting</h3>
+<div class="grid"><div>
+<p>LLM provider<br><select id="cfgProv"><option>Anthropic (Claude Console)</option></select></p>
+<p>Model<br><input id="cfgModel" size="40"> <span class="note">Use a model name available to your Claude Console account.</span></p>
+<p>API endpoint<br><input id="cfgEndpoint" size="60"></p>
+<p>API key<br><input type="password" id="cfgKey" size="60" placeholder="sk-ant-… (placeholder – paste your Claude Console key)" autocomplete="off"></p>
+<p><label><input type="checkbox" id="cfgUse"> Use AI model. If off, only the offline template classes, local matching and rule-based eligibility checks run.</label></p>
+<p>Output format<br><select id="cfgOut"><option>JSON (strict)</option></select> <span class="note">Responses are parsed as JSON; the workbook rejects anything else.</span></p>
+<p>Max tokens per call<br><input id="cfgTok" size="8"></p>
+</div><div>
+<p>Embedding provider<br><select id="cfgEProv"><option value="local">Local lexical vectors (offline fallback – not semantic)</option><option value="api">Embedding API (OpenAI-compatible / Voyage format)</option></select></p>
+<p>Embedding model<br><input id="cfgEModel" size="40"></p>
+<p>Embedding API endpoint<br><input id="cfgEEndpoint" size="60"></p>
+<p>Embedding API key<br><input type="password" id="cfgEKey" size="60" placeholder="embedding key (placeholder)" autocomplete="off"></p>
+<p>Similarity threshold (0–1)<br><input id="cfgThr" size="6"> <span class="note">Candidate matches below the threshold are discarded. The scale differs by embedding model; calibrate it.</span></p>
+<p>Chunk size (characters) <input id="cfgCS" size="6"> Overlap <input id="cfgCO" size="6"> Top-K matches per class <input id="cfgK" size="4"></p>
+</div></div>
+<p>Normbuilder prompt (system)<br><textarea id="cfgPN" rows=9 style="width:99%"></textarea></p>
+<p>Matching Engine prompt (system – used to review candidate matches inside the validation call)<br><textarea id="cfgPM" rows=6 style="width:99%"></textarea></p>
+<p>Validation prompt (system)<br><textarea id="cfgPV" rows=14 style="width:99%"></textarea></p>
+<button class="b" onclick="saveCfg()">Save settings</button> <button class="b s" onclick="testCfg()">Test connection</button> <button class="b s" onclick="resetPrompts()">Restore default prompts</button> <span id="cfgMsg" class="note"></span>
+<p><b>Last run status:</b> <span id="lastRun">never run</span></p>
+<hr><p class="note">{{SETTINGS_INTRO}}</p>
+</div></section>
+<section id="method"><div class="card"><h3>Method & IIA Standards references</h3>{{METHOD}}</div></section>
+</main>
+<input type="file" id="fi" multiple hidden>
+<script>
+/*__USECASE__*/
+</script></body></html>
