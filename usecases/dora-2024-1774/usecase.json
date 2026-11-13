@@ -1,8 +1,8 @@
 {
  "id": "dora-2024-1774",
- "title": "AI Audit Workbook – Use case: TEMPLATE",
+ "title": "AI Audit Workbook – DORA ICT risk management",
  "subtitle": "Runs in your browser · no data leaves your device unless AI/embedding APIs are switched on · aligned to the Global Internal Audit Standards (2024) · Normbuilder Engine + Matching Engine",
- "version": "1.1",
+ "version": "0.1",
  "engineVersion": "0.1",
  "classesOrigin": "Normative package (auditor-confirmed drafts)",
  "normativeSources": [
