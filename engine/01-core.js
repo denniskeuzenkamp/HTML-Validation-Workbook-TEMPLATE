@@ -12,12 +12,13 @@ const PKG = window.__USECASE__;
 if (!PKG) throw new Error('No use-case package injected: window.__USECASE__ is missing.');
 
 /* Compile the string patterns that build.py wrote into the package. */
-const DATES = /\b20\d\d-\d\d-\d\d\b|\b\d{1,2}[ -](?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*[ -]20\d\d\b/ig;
+
 (function hydrate() {
   const V = PKG.evidenceVocab;
   V.design = new RegExp(V.design, 'i');
   V.operating = new RegExp(V.operating, 'i');
   V.designDetail = new RegExp(V.designDetail, 'ig');
+  V.date = new RegExp(V.date, 'ig');
   V.categories = V.categories.map(([re, label]) => [new RegExp(re, 'i'), label]);
   PKG.raciRules = PKG.raciRules.map(([re, raci]) => [new RegExp(re, 'i'), raci]);
   PKG.stopwords = new Set(PKG.stopwords);
@@ -128,9 +129,9 @@ function addPaste(r) {
 function eligibility(name, t) {
   const V = PKG.evidenceVocab;
   const head = name + ' ' + t.slice(0, 500);
-  const nd = (t.match(DATES) || []).length;
-  const des = V.design.test(name) || (V.design.test(head) && nd < 3);
-  const op = V.operating.test(name) || nd >= 3;
+  const nd = (t.match(V.date) || []).length;
+  const des = V.design.test(name) || (V.design.test(head) && nd < V.dateThreshold);
+  const op = V.operating.test(name) || nd >= V.dateThreshold;
   const det = (t.match(V.designDetail) || []).length;
   const TD = des;
   const DE = des && det >= 6 && t.length > 600;

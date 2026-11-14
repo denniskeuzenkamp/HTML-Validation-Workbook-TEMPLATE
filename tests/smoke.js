@@ -38,6 +38,12 @@ const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); if (!c) failed+
   ok(log.el.OE && !log.el.TD, 'operating log: OE eligible, NOT TD eligible');
   ok(pol.el.TD && !pol.el.OE, 'policy: TD eligible, NOT OE eligible');
 
+  const dated = W.eligibility('Quarterly_Field_Note.txt',
+    'Field note 14/11/2026, follow-up 21/11/2026, closed 28/11/2026.');
+  ok(dated.OE, 'package-format dates flip OE on at the threshold');
+
+
+
   ok(await W.runMatch() === true, 'matching engine ran (local lexical)');
   ok(S.chunks.length > 0 && Object.keys(S.match).length > 0, 'chunks and candidate matches produced');
 
