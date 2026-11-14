@@ -34,6 +34,8 @@ def build(use_case_dir: pathlib.Path) -> pathlib.Path:
         "design": re_compile(el.get("designPattern")),
         "operating": re_compile(el.get("operatingPattern")),
         "designDetail": re_compile(el.get("designDetailPattern")),
+        "date": re_compile(el.get("datePattern", DEFAULT_DATE_PATTERN)),
+        "dateThreshold": el.get("dateThreshold", 3),
         "categories": [[re_compile(c["pattern"]), c["label"]] for c in el.get("categories", [])],
         "defaultCategory": el.get("defaultCategory", "Other"),
     }
@@ -144,6 +146,10 @@ def classes_by_ref(reqs):
 def re_compile(pattern):
     """Return a JS-style regex literal marker; the engine builds RegExp from strings."""
     return pattern
+
+DEFAULT_DATE_PATTERN = (r"\b20\d\d-\d\d-\d\d\b"
+                        r"|\b\d{1,2}[ -](?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*[ -]20\d\d\b")
+
 
 
 DEFAULT_STOPWORDS = ("the and for that with shall this which from have been will their there these those such each "

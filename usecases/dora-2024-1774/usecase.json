@@ -33,6 +33,7 @@
   "designPattern": "policy|procedure|process description|manual|guideline|sop|raci|matrix|framework|standard|rcm|risk.?control|charter|methodology|roles and responsibilities|work instruction|playbook|plan\\b",
   "operatingPattern": "\\blog\\b|logs|report|ticket|record|register|sample|extract|minutes|test result|scan|screenshot|export|review of|attestation|recertification|restore test|incident|approval|evidence of|dashboard|kri|invoice|sign-?off",
   "designDetailPattern": "scope|owner|responsib|frequency|at least|annual|quarter|monthly|criteria|approved by|approval|escalat|exception|threshold|retention|must|shall",
+  "datePattern": "\\b\\d{1,2}/\\d{1,2}/20\\d\\d\\b|\\b20\\d\\d-\\d\\d-\\d\\d\\b",
   "categories": [
    {
     "pattern": "raci|ownership|roles and responsibilities",
