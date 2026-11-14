@@ -1,5 +1,13 @@
 # Changelog
 
+## [Engine 0.2 / DORA package 1.1] – 2026-11-14
+
+### Changed
+- Validation Sheet split into three separate tables — Test of Design, Design Effectiveness and Operating Effectiveness — each with requirement, verdict and reasoning columns. TD, DE and OE were previously columns inside a single table.
+- The previous 18-column validation table is no longer rendered. The columns it carried (matched evidence, similarity score, match rationale, evidence gaps, confidence level, auditor review flag, recommended follow-up, auditor notes, requirement classes) are undecided — see issue #3.
+
+
+
 ## [Engine 0.1 / DORA package 1.1] – 2026-11-13
 
 ### Changed
