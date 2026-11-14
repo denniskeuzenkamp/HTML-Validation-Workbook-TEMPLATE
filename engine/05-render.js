@@ -1,6 +1,3 @@
-//Exercise: via VSCODE
-
-
 /* ============================================================
    Validation Workbook Engine — Source Register and Validation Sheet
    ============================================================ */
@@ -19,6 +16,29 @@ function ovSel(r, k) {
   return '<br><select onchange="(S.ov[\'' + r.id + '\']=S.ov[\'' + r.id + '\']||{})[\'' + k + '\']=this.value||undefined;render()">' +
     '<option value="">override: auto</option>' + VOC[k].map(x => '<option ' + (cur == x ? 'selected' : '') + '>' + x + '</option>').join('') + '</select>';
 }
+
+/* three separate result tables: TD, DE and OE are never merged */
+function resultTable(key, title) {
+  const head = '<tr><th>Requirement</th><th>Verdict</th><th>Reasoning</th></tr>';
+  const body = S.reqs.map(r => {
+    const v = view(r), z = v.ai && v.ai.res[key];
+    const verdict = tag(v[key]) + ovSel(r, key);
+    const why = z
+      ? esc(z.why) + (z.quote
+          ? '<br><i>\u201c' + esc(z.quote) + '\u201d</i> ' + (z.qok
+              ? '<span style="color:#1c6b36">✓ quote verified</span>'
+              : '<span style="color:#8c1d1d">⚠ quote not found</span>')
+          : '')
+      : '<span class="note">Not assessed by AI. Absence of a match is not compliance.</span>';
+    return '<tr><td>' + r.id + '<br><span class="note">' + esc(r.ref) + '</span></td>' +
+      '<td class="w">' + verdict + '</td><td class="w">' + why + '</td></tr>';
+  }).join('');
+  return '<h3>' + title + '</h3><table>' + head + (body ||
+    '<tr><td colspan=3>Upload a normative document first, or load the use-case normative package in the Upload tab.</td></tr>') + '</table>';
+}
+
+
+
 
 function render() {
   document.getElementById('status').innerHTML =
@@ -73,8 +93,9 @@ function render() {
   }).join('');
 
   document.getElementById('valT').innerHTML =
-    '<table><tr><th>Source reference</th><th>Requirement text</th><th>Requirement summary</th><th>Control Design</th><th>Monitoring the Effectiveness</th><th>Demonstrate by Evidencing</th><th>Ownership (RACI)</th><th>Matched evidence (candidate)</th><th>Similarity score</th><th>Match rationale</th><th>TD result</th><th>DE result</th><th>OE result</th><th>Evidence gaps</th><th>Confidence level</th><th>Auditor review flag</th><th>Recommended follow-up action</th><th>Auditor notes</th></tr>' +
-    (rows || '<tr><td colspan=18>Upload a normative document first, or load the use-case normative package in the Upload tab.</td></tr>') + '</table>';
+    resultTable('td', 'Table 1 — Test of Design') +
+    resultTable('de', 'Table 2 — Design Effectiveness') +
+    resultTable('oe', 'Table 3 — Operating Effectiveness');
 
   const bar = document.getElementById('valBar');
   if (bar) {
