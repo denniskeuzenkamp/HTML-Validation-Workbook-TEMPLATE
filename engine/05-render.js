@@ -38,7 +38,42 @@ function resultTable(key, title) {
 }
 
 
+function wordingCell(r) {
+  const w = r.wording || r.text;
+  const mark = r.trace === 'verified'
+    ? '<span style="color:#1c6b36">✓ wording found in the uploaded document</span>'
+    : r.trace === 'unverified'
+      ? '<span style="color:#8c1d1d">⚠ wording not traceable to the uploaded document – check before use</span>'
+      : '<span class="note">no source text to check against</span>';
+  const len = w.length;
+  return '<details><summary>' + esc(r.ref) + ' — show full article (' + len.toLocaleString() + ' characters)</summary>' +
+    '<div style="white-space:pre-wrap;max-height:340px;overflow:auto;margin-top:6px">' + esc(w) + '</div>' +
+    '<div class="note" style="margin-top:4px">Wording source: ' + esc(r.wordingBy || 'unknown') + ' · ' + mark + '</div>' +
+    '</details>';
+}
 
+/* The second view: four tables, one requirement class each. Every table reads the
+   same single copy of the wording (r.wording), so a correction in one cannot leave
+   the tables disagreeing with one another. */
+function classTable(key, cls, title, note) {
+  const head = '<tr><th>Article text</th><th>Requirement</th><th>' + title + ' expectation</th><th>Verdict</th></tr>';
+  const body = S.reqs.map(r => {
+    const v = view(r), z = v.ai && v.ai.res[key];
+    const isResult = key !== 'owner';
+    const verdict = isResult
+      ? tag(v[key]) + ovSel(r, key) +
+        (z && z.quote ? '<br><i>\u201c' + esc(z.quote) + '\u201d</i> ' + (z.qok
+          ? '<span style="color:#1c6b36">✓ quote verified</span>'
+          : '<span style="color:#8c1d1d">⚠ quote not found</span>') : '')
+      : '<span class="note">Ownership is a RACI expectation. It is not a TD, DE or OE verdict, and is not merged with them.</span>';
+    return '<tr><td class="w">' + wordingCell(r) + '</td>' +
+      '<td>' + esc(r.id) + '<br><span class="note">' + esc(r.ref) + '</span></td>' +
+      '<td class="w">' + esc(r.cls[cls]) + '<br><span class="note">' + esc(r.clsBy) + ' · draft for auditor confirmation</span></td>' +
+      '<td class="w">' + verdict + '</td></tr>';
+  }).join('');
+  return '<h3>' + title + '</h3><p class="note">' + note + '</p><table>' + head + (body ||
+    '<tr><td colspan=4>Upload a normative document first, or load the use-case normative package in the Upload tab.</td></tr>') + '</table>';
+}
 
 function render() {
   document.getElementById('status').innerHTML =
@@ -76,7 +111,7 @@ function render() {
     const gaps = ai ? esc(ai.gaps) : '<span class="note">Not assessed by AI. Absence of a match is not compliance.</span>';
     const flag = ai ? ai.review : 'Yes';
     return '<tr><td>' + r.id + '<br><span class="note">' + esc(r.ref) + '</span></td>' +
-      '<td class="w">' + esc(r.text.slice(0, 900)) + (r.text.length > 900 ? '…' : '') + '</td>' +
+      '<td class="w">' + wordingCell(r) + '</td>' +
       '<td>' + esc(r.summary) + '</td>' +
       '<td class="w">' + esc(r.cls.design) + '<br><span class="note">' + esc(r.clsBy) + '</span></td>' +
       '<td class="w">' + esc(r.cls.monitor) + '</td>' +
@@ -93,9 +128,15 @@ function render() {
   }).join('');
 
   document.getElementById('valT').innerHTML =
-    resultTable('td', 'Table 1 — Test of Design') +
-    resultTable('de', 'Table 2 — Design Effectiveness') +
-    resultTable('oe', 'Table 3 — Operating Effectiveness');
+    classTable('td', 'design', 'Table 1 — Test of Design',
+      'Control Design: the control, process, policy, procedure or governance arrangement that should exist.') +
+    classTable('de', 'monitor', 'Table 2 — Design Effectiveness',
+      'Monitoring the Effectiveness: how the control should be monitored to show it remains effective.') +
+    classTable('oe', 'evidence', 'Table 3 — Operating Effectiveness',
+      'Demonstrate by Evidencing: which evidence tests TD, DE and OE.') +
+    classTable('owner', 'owner', 'Table 4 — Ownership',
+      'Ownership (RACI): Responsible, Accountable, Consulted, Informed. Shown last; not prioritised by users.');
+
 
   const bar = document.getElementById('valBar');
   if (bar) {

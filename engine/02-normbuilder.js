@@ -20,7 +20,7 @@ function extractNorm(d) {
         const text = body.join(' ').replace(/\s+/g, ' ').trim();
         if (!text) continue;
         n++;
-        pushReq(d, R.refTemplate.replace('{n}', num).replace('{title}', title), text, n);
+        pushReq(d, R.refTemplate.replace('{n}', num).replace('{title}', title), text, n, R.wordingByRef && R.wordingByRef['Art. ' + num]);
       }
       return;
     }
@@ -36,17 +36,30 @@ function extractNorm(d) {
     pushReq(d, d.name + ' §' + n, s.replace(/^[-•*\d.)\s]+/, ''), n);
   });
 }
+/* Does this passage appear in the source document the requirement came from?
+   Exact containment on whitespace-normalised text: a near match would defeat
+   the purpose, which is to refuse wording the auditor did not supply. */
+function traceWording(srcDoc, wording) {
+  const norm = s => String(s || '').replace(/\s+/g, ' ').trim();
+  const w = norm(wording), u = norm(srcDoc && srcDoc.text);
+  if (!w) return 'none';
+  if (!u) return 'unverified';
+  return u.includes(w) ? 'verified' : 'unverified';
+}
 
 /* A requirement may carry its four classes from the use-case package (auditor-confirmed)
    or from the offline template (placeholder, replaced by the LLM Normbuilder). */
-function pushReq(d, ref, text, n) {
+function pushReq(d, ref, text, n, packagedWording) {
   const base = ref.split(' – ')[0].trim();
   const packaged = PKG.classesByRef && PKG.classesByRef[base];
   const r = {
     id: d.id + '-R' + String(n).padStart(2, '0'),
     src: d.id, ref, text,
-    summary: text.replace(/\s+/g, ' ').slice(0, 220) + (text.length > 220 ? '…' : '')
+    summary: text.replace(/\s+/g, ' ').slice(0, 220) + (text.length > 220 ? '…' : ''),
+    wording: packagedWording || text,
+    wordingBy: packagedWording ? (PKG.wordingOrigin || 'articles.json') : 'Template draft'
   };
+  r.trace = traceWording(d, r.wording);
   if (packaged) { r.cls = packaged; r.clsBy = PKG.classesOrigin || 'Use-case package'; }
   else { r.cls = tmplClasses(r); r.clsBy = 'Template draft'; }
   S.reqs.push(r);
@@ -81,6 +94,11 @@ async function runNorm(force) {
         const r = S.reqs.find(q => q.id === x.id);
         if (!r) return;
         r.summary = x.summary || r.summary;
+        if (x.article && x.article.trim()) {
+          r.wording = x.article;
+          r.wordingBy = 'LLM draft';
+          r.trace = traceWording(S.docs.find(d => d.id === r.src), r.wording);
+        }
         r.cls = { design: x.design || '', monitor: x.monitor || '', evidence: x.evidence || '', owner: x.owner || '' };
         r.clsBy = 'LLM';
         S.match = {};
