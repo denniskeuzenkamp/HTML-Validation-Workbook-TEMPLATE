@@ -62,6 +62,8 @@ def build(use_case_dir: pathlib.Path) -> pathlib.Path:
         "defaultRaci": package.get("defaultRaci", ["ICT risk function", "Management body", "Compliance, internal audit", "Business and ICT functions"]),
         "classesByRef": classes_by_ref(reqs),
         "classesOrigin": package.get("classesOrigin", "Normative package"),
+        "wordingOrigin": package.get("wordingOrigin", "articles.json"),
+        "packagedArticles": packaged_articles(reqs),
         "normativePackage": {
             "fileName": package["normativePackage"]["fileName"],
             "fileTag": package["normativePackage"]["fileTag"],
@@ -124,6 +126,10 @@ def load_requirements(use_case_dir, package):
             "article": a["n"],
             "title": a["t"],
             "text": " ".join(a["x"].split()),
+            # full article wording, kept whole and kept apart from the
+            # truncated summary that `text` collapses into downstream
+            "articleText": " ".join(a["x"].split()),
+            "articleSource": "articles.json",
         }
         if a.get("applicability"):
             item["applicability"] = a["applicability"]
@@ -142,6 +148,21 @@ def attach_classes(reqs, classes):
 def classes_by_ref(reqs):
     return {r["ref"].split(" – ")[0].strip(): r["classes"] for r in reqs if r.get("classes")}
 
+def packaged_articles(reqs):
+    """The package's own article list, in the shape the upload path produces.
+
+    The 'Load the normative package' button builds the 42 rows from this, so
+    rows and wording come from one source. Kept in requirement order.
+    """
+    return [
+        {
+            "ref": r["ref"],
+            "article": r.get("article"),
+            "wording": r.get("articleText") or r["text"],
+            "wordingBy": r.get("articleSource", "articles.json"),
+        }
+        for r in reqs
+    ]
 
 def re_compile(pattern):
     """Return a JS-style regex literal marker; the engine builds RegExp from strings."""
