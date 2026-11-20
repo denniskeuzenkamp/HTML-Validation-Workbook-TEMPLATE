@@ -52,11 +52,76 @@ function wordingCell(r) {
     '</details>';
 }
 
+/* The evidence trail for one procedure (TD, DE or OE), for display beside the result.
+   Reads only what the engine already holds: the matched chunks, the document each
+   chunk came from, the candidate score, and the citation the validation result made.
+   A candidate match is never evidence relied upon; only a cited chunk is. */
+function evidenceCell(r, key) {
+  const T = key.toUpperCase();
+  const eligible = evFor(r.id, T);
+  const ai = S.ai[r.id];
+  const z = ai && ai.res[key];
+  const cited = (z && z.chunks) || [];
+
+  /* relied upon: cited by the result AND eligible for this procedure */
+  const seen = new Set();
+  const reliedOn = eligible
+    .filter(x => cited.includes(x.chunk))
+    .filter(x => (seen.has(x.chunk) ? false : seen.add(x.chunk)));
+
+
+  /* cited but not eligible: shown and marked, never omitted */
+  const ineligible = cited
+    .map(cid => {
+      const m = (S.match[r.id] || []).find(x => x.chunk === cid);
+      const d = S.docs.find(q => q.id === (m ? m.doc : null));
+      return m && !(S.docs.find(q => q.id === m.doc) || {}).el[T]
+        ? { chunk: cid, name: d ? d.name : cid, score: m.score }
+        : null;
+    })
+    .filter(Boolean);
+
+  const line = x => {
+    const d = S.docs.find(q => q.id === x.doc);
+    return '<div style="margin-bottom:3px">' + (d ? esc(d.name) : esc(x.doc)) +
+      ' <span class="note">chunk ' + esc(x.chunk) + '</span></div>';
+  };
+
+  if (reliedOn.length) {
+    return reliedOn.map(line).join('') +
+      '<div class="note">Candidate similarity ' +
+      reliedOn.map(x => x.score.toFixed(3)).join(' / ') +
+      ' – ranking indicator only, not audit proof.</div>' +
+      (ineligible.length
+        ? '<div style="margin-top:4px">' + ineligible.map(x =>
+            '<div><s>' + esc(x.name) + '</s> <span class="note">cited but not ' + T +
+            '-eligible – cannot support this conclusion (chunk ' + esc(x.chunk) + ')</span></div>').join('') + '</div>'
+        : '');
+  }
+
+  if (ineligible.length) {
+    return ineligible.map(x =>
+      '<div><s>' + esc(x.name) + '</s> <span class="note">cited but not ' + T +
+      '-eligible – cannot support this conclusion (chunk ' + esc(x.chunk) + ')</span></div>').join('') +
+      '<div class="note">No ' + T + '-eligible evidence relied upon.</div>';
+  }
+
+  if (!S.docs.some(d => d.role == 'Evidence' && !d.unread)) {
+    return '<span class="note">No evidence document uploaded.</span>';
+  }
+  if (!Object.keys(S.match).length) {
+    return '<span class="note">Evidence not matched yet.</span>';
+  }
+  return '<span class="note">No ' + T + '-eligible candidate evidence above the threshold. ' +
+    'Missing evidence is not compliance.</span>';
+}
+
 /* The second view: four tables, one requirement class each. Every table reads the
    same single copy of the wording (r.wording), so a correction in one cannot leave
    the tables disagreeing with one another. */
-function classTable(key, cls, title, note) {
-  const head = '<tr><th>Article text</th><th>Requirement</th><th>' + title + ' expectation</th><th>Verdict</th></tr>';
+function classTable(key, cls, title, note, evidence) {
+  const head = '<tr><th>Article text</th><th>Requirement</th><th>' + title + ' expectation</th><th>Verdict</th>' +
+    (evidence ? '<th>Evidence relied upon</th>' : '') + '</tr>';
   const body = S.reqs.map(r => {
     const v = view(r), z = v.ai && v.ai.res[key];
     const isResult = key !== 'owner';
@@ -69,10 +134,11 @@ function classTable(key, cls, title, note) {
     return '<tr><td class="w">' + wordingCell(r) + '</td>' +
       '<td>' + esc(r.id) + '<br><span class="note">' + esc(r.ref) + '</span></td>' +
       '<td class="w">' + esc(r.cls[cls]) + '<br><span class="note">' + esc(r.clsBy) + ' · draft for auditor confirmation</span></td>' +
-      '<td class="w">' + verdict + '</td></tr>';
+      '<td class="w">' + verdict + '</td>' +
+      (evidence ? '<td class="w">' + evidenceCell(r, key) + '</td>' : '') + '</tr>';
   }).join('');
   return '<h3>' + title + '</h3><p class="note">' + note + '</p><table>' + head + (body ||
-    '<tr><td colspan=4>Upload a normative document first, or load the use-case normative package in the Upload tab.</td></tr>') + '</table>';
+    '<tr><td colspan=' + (evidence ? 5 : 4) + '>Upload a normative document first, or load the use-case normative package in the Upload tab.</td></tr>') + '</table>';
 }
 
 function render() {
@@ -129,7 +195,9 @@ function render() {
 
   document.getElementById('valT').innerHTML =
     classTable('td', 'design', 'Table 1 — Test of Design',
-      'Control Design: the control, process, policy, procedure or governance arrangement that should exist.') +
+      'Control design: the control, process, policy, procedure or governance arrangement that should exist. ' +
+      'Evidence relied upon is the TD-eligible chunk cited by the result; a candidate match is never evidence relied upon. ' +
+      'Candidate similarity is a ranking indicator, not audit proof.', true) +
     classTable('de', 'monitor', 'Table 2 — Design Effectiveness',
       'Monitoring the Effectiveness: how the control should be monitored to show it remains effective.') +
     classTable('oe', 'evidence', 'Table 3 — Operating Effectiveness',

@@ -21,7 +21,8 @@ const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); if (!c) failed+
 
 (async () => {
   const run = new Function(js + `
-    ;return {S,PKG,loadReg,loadSample,runMatch,enforce,view,evFor,eligibility,addDoc,costPreview,provenance,CL,traceWording,render,classTable};`);
+        ;return {S,PKG,loadReg,loadSample,runMatch,enforce,view,evFor,eligibility,addDoc,costPreview,provenance,CL,traceWording,render,classTable,evidenceCell};
+`);
   const W = run();
   const { S, PKG } = W;
 
@@ -101,8 +102,55 @@ const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); if (!c) failed+
   ok(built.every(t => t.indexOf('<table>') > -1), 'each of the four class tables builds a table');
   ok(built.every(t => S.reqs.every(r => t.split(r.wording).length - 1 >= 1)),
      'every requirement wording appears in each of the four tables');
+/* lifts a real passage out of a stored chunk, so the tests can quote one */
+  const chunkTextFor = (W, id) => {
+    const c = W.S.chunks.find(x => x.id === id);
+    return c ? c.text.slice(20, 80) : 'x';
+  };
+/* ---- issue #20: the evidence trail beside the TD verdict ---- */
 
+  /* 6. relied upon = cited by the result AND eligible for the procedure.
+        A candidate match alone must never appear as evidence relied upon.
+        The requirement is CHOSEN because it has a TD-eligible candidate: a test
+        that cannot run must fail, not pass quietly. */
+  const withTd = S.reqs.find(r => W.evFor(r.id, 'TD').length);
+  ok(!!withTd, 'the package offers a requirement with TD-eligible candidate evidence to test');
+  if (withTd) {
+    const chunk = W.evFor(withTd.id, 'TD')[0].chunk;
+    S.ai[withTd.id] = W.enforce({ id: withTd.id, td: { result: 'Identified', quote: chunkTextFor(W, chunk), chunks: [chunk] } });
+    const shown = W.evidenceCell(withTd, 'td');
+    ok(/ranking indicator/i.test(shown),
+       'a cited eligible chunk is shown with the score labelled a ranking indicator');
+    ok(!/%/.test(shown), 'the score is never shown as a percentage of compliance');
+    ok(shown.indexOf('<s>') === -1, 'evidence relied upon is shown without a strike-through');
+  }
 
+  /* 7. cited but not TD-eligible: shown and marked ineligible, never omitted */
+  const citedNonTd = S.reqs.map(r => {
+    const bad = (S.match[r.id] || []).find(x => {
+      const d = S.docs.find(q => q.id === x.doc);
+      return d && !d.el.TD;
+    });
+    return bad ? { r, bad } : null;
+  }).find(Boolean);
+  ok(!!citedNonTd, 'the package offers a requirement with a non-TD-eligible candidate to test');
+  if (citedNonTd) {
+    S.ai[citedNonTd.r.id] = W.enforce({
+      id: citedNonTd.r.id,
+      td: { result: 'Identified', quote: chunkTextFor(W, citedNonTd.bad.chunk), chunks: [citedNonTd.bad.chunk] }
+    });
+    const shown2 = W.evidenceCell(citedNonTd.r, 'td');
+    ok(/not TD-eligible/.test(shown2), 'a cited ineligible document is marked ineligible');
+    ok(shown2.includes('<s>'), 'a cited ineligible document is shown, not omitted');
+  }
+
+  /* 8. the evidence column belongs to Table 1 only */
+  const t1 = W.classTable('td', 'design', 'x', 'y', true);
+  const t2 = W.classTable('de', 'monitor', 'x', 'y');
+  ok(/Evidence relied upon/.test(t1), 'Table 1 carries the evidence relied upon column');
+  ok(!/Evidence relied upon/.test(t2), 'Table 2 does not carry the evidence relied upon column');
+  
+  
   console.log(failed ? '\n' + failed + ' FAILED' : '\nALL PASSED');
   process.exit(failed ? 1 : 0);
 })().catch(e => { console.error('CRASH', e); process.exit(2); });
