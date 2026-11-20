@@ -42,8 +42,7 @@ Needs Python 3.9+ and Node 18+. No dependencies. Open the HTML in Chrome, Edge o
 - No eligible evidence means Not assessable (Not identified for TD). Missing evidence is not compliance.
 - Positive results need a verbatim quote from an eligible chunk, otherwise they are downgraded.
 - TD, DE and OE are never merged. Partial, not assessable, low-confidence results set the auditor review flag.
-- The Validation Sheet presents TD, DE and OE as three separate tables, each with requirement, verdict and reasoning columns.
-
+- The Validation Sheet presents TD, DE and OE as three separate tables. Table 1 (Test of Design) also shows the evidence relied upon for each verdict; a candidate match is never evidence relied upon.
 
 ## Known limits
 
@@ -52,5 +51,6 @@ Needs Python 3.9+ and Node 18+. No dependencies. Open the HTML in Chrome, Edge o
 - DORA text came from a PDF: verify against EUR-Lex. Verify IIA Standard numbering against the published text.
 - One requirement per Article. Finer cuts need a different `requirementCut` or a prepared `requirements.json`.
 - No licence chosen yet.
-- The Validation Sheet shows only the three result tables. The other columns of the former validation table are not rendered; whether they return is undecided (issue #3).
+- The Validation Sheet shows only the four class tables. The other columns of the former validation table are not rendered; whether they return is undecided (issue #3).
+
 
