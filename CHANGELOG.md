@@ -1,4 +1,14 @@
 # Changelog
+## [Engine 0.3 / DORA package 1.1] – 2026-11-20
+
+### Added
+- Test of Design table (Table 1) now shows the evidence relied upon for each verdict: the evidence document name, the part reference within it, and the candidate score labelled as a ranking indicator only.
+- A document cited by a result but not marked TD-eligible is shown struck through with the reason, rather than omitted.
+- Where no TD-eligible evidence exists above the threshold, the row states it plainly rather than leaving the cell empty.
+
+### Changed
+- Table 1 carries a fifth column, `Evidence relied upon`. Tables 2, 3 and 4 are unchanged.
+- `tests/smoke.js`: four checks added covering the evidence trail — relied-upon requires citation and eligibility; the score is a ranking indicator and never a percentage; evidence relied upon is shown without a strike-through; a cited ineligible document is marked ineligible and not omitted.
 
 ## [Engine 0.2 / DORA package 1.1] – 2026-11-14
 
